@@ -6,11 +6,12 @@ from subprocess import PIPE
 import subprocess
 import re
 import string
+import mapper
 
 # Enum for VM type
 class TASKTYPE:
     TASK_MOUNT = 1
-    TASK_VERIFY_USER = 2
+    TASK_SHARED_STORAGE = 2
     TASK_OTHERS = 3
 
 class Task():
@@ -62,6 +63,10 @@ class Task():
 
         if task_type == TASKTYPE.TASK_MOUNT:
             self._do_format_and_mount(*args)
+
+        elif task_type == TASKTYPE.TASK_SHARED_STORAGE:
+            self._do_attach_shared_storage(*args)
+
         else:
             print "No other tasks defined"  # TODO: Better error handling
 
@@ -69,7 +74,14 @@ class Task():
         if ord(char) < 1 or ord(char) > 127: return ''
         else: return char
 
-    def _do_something(self, user_id, cinder_id,)
+    def _do_attach_shared_storage(self, user_id, cinder_id, instance_id):
+
+        if not mapper.Mapper.check_exist_user_cinder(user_id, cinder_id):
+            print "User not authorized"
+
+        else:
+            print "User authorized"
+
 
     def _do_format_and_mount(self, filesystem, mountpoint,size):
 

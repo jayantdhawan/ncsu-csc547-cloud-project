@@ -7,7 +7,7 @@ import sys
 import ctask as ctask
 
 class ConfigParser():
-    
+
     def parse_input(self):
         parser = argparse.ArgumentParser(description="Utility to carry out tasks on a running virtual machine")
 
@@ -35,6 +35,11 @@ class ConfigParser():
         group_mount.add_argument('--mountpoint', metavar='<mountpoint>', dest='mountpoint', help='directory path to mount at')
         group_mount.add_argument('--size', metavar='<size in bytes>', dest='size', help='size of the block to be found')
 
+        group_mount = parser.add_argument_group('Attaching shared storage options')
+        group_mount.add_argument('--osuser', required=False, dest='osuser', help='OpenStack user name')
+        group_mount.add_argument('--cinder-id', dest='cinder_id', help='volume ID of the Cinder volume to be attached')
+        group_mount.add_argument('--instance-id', dest='instance_id', help='instance ID to attach the volume to')
+
         return parser.parse_args()
 
 def main():
@@ -53,9 +58,14 @@ def main():
         logging.critical("Some SSH error")
 
     # Now call the specific task
-    ret = task.do_task(ctask.TASKTYPE.TASK_MOUNT, cinput.format, cinput.mountpoint, cinput.size)
-    if ret == -1:
-        logging.critical("Some error")
+    if cinput.format or cinput.mountpoint:
+        ret = task.do_task(ctask.TASKTYPE.TASK_MOUNT, cinput.format, cinput.mountpoint, cinput.size)
+        if ret == -1:
+            logging.critical("Some error")
+    elif cinput.osuser:
+        ret = task.do_task(ctask.TASKTYPE.TASK_SHARED_STORAGE, cinput.osuser, cinput.cinder_id, cinput.instance_id)
+        if ret == -1:
+            logging.critical("Some error")
 
     # Disconnect the SSH session
     ret = task.do_terminate()
