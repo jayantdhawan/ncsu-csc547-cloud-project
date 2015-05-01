@@ -1,11 +1,17 @@
 # coding: utf-8
-import cerror
-import paramiko
+
+# Built-in modules
 import logging
 from subprocess import PIPE
 import subprocess
 import re
 import string
+
+# Third-party modules
+import paramiko
+import cinderclient.v1.client as cclient
+
+# Local modules
 import mapper
 
 # Enum for VM type
@@ -71,22 +77,30 @@ class Task():
             print "No other tasks defined"  # TODO: Better error handling
 
     def _onlyascii(self, char):
+
         if ord(char) < 1 or ord(char) > 127: return ''
         else: return char
 
+    def _do_format_and_mount(self, filesystem, mountpoint,size):
+
+        # _locate_block_format_and_mount()
+
+        # dummy
+        cc = cclient.Client('admin', 'password', 'project8april', 'http://localhost:5000/v2.0', service_type="volume")
+        print cc.volumes.list()
+
     def _do_attach_shared_storage(self, user_id, cinder_id, instance_id):
 
+        # dummy
         if not mapper.Mapper.check_exist_user_cinder(user_id, cinder_id):
             print "User not authorized"
 
         else:
             print "User authorized"
 
+    def _locate_block_format_and_mount
 
-    def _do_format_and_mount(self, filesystem, mountpoint,size):
-
-        # This is where we do our task
-
+        """
         #print filesystem, mountpoint, force
 
         stdin, stdout, stderr = self.ssh.exec_command("sudo lsblk -b --output NAME,SIZE,TYPE,FSTYPE,MOUNTPOINT")
@@ -163,6 +177,7 @@ class Task():
             print stdout.read()
             print stderr.read()
             return
+        """
 
     def do_terminate(self):
         self.ssh.close()

@@ -199,10 +199,7 @@ class Mapper:
 	#		print("Inside 1L");
 			return bool(True);
 
-
-
-print "Hello World"
-
+"""
 mapper = Mapper()
 #print mapper.insert_user_storage_grp('a',1)
 #print mapper.insert_user_storage_grp('b',1)
@@ -233,3 +230,4 @@ if(mapper.check_exist_user_cinder('b','f')):
 else:
         print("b-f Cinder-User mapping not found");
 
+"""
