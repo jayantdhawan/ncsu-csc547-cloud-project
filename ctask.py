@@ -9,10 +9,10 @@ import string
 
 # Third-party modules
 import paramiko
-import cinderclient.v1.client as cclient
+#import cinderclient.v1.client as cclient
 
 # Local modules
-import mapper
+import cmapper as mapper
 
 # Enum for VM type
 class TASKTYPE:
@@ -34,7 +34,7 @@ class Task():
         self.keypath = key
         self.isWindows = isWindows
 
-    def do_login(self):
+    def _do_login(self):
 
         if not self.isWindows:
             # TODO: Handle errors at each step
@@ -63,7 +63,10 @@ class Task():
     def do_task(self, task_type, *args):
 
         if not self.ssh:
-            return -1
+            # Perform login to the virtual machine
+            ret = self._do_login()
+            if ret == -1:
+                logging.critical("Some SSH error")
 
         # TODO: More sanity checks?
 
@@ -76,18 +79,26 @@ class Task():
         else:
             print "No other tasks defined"  # TODO: Better error handling
 
+        # Disconnect the SSH session
+        ret = self._do_terminate()
+
+
     def _onlyascii(self, char):
 
         if ord(char) < 1 or ord(char) > 127: return ''
         else: return char
 
-    def _do_format_and_mount(self, filesystem, mountpoint,size):
+    def _do_format_and_mount(self, filesystem, mountpoint, size):
 
-        # _locate_block_format_and_mount()
+        #self._locate_block_format_and_mount(filesystem, mountpoint,size)
+
+        stdin, stdout, stderr = self.ssh.exec_command("pwd; ls -al")
+        print stdout.read()
+        print stderr.read()
 
         # dummy
-        cc = cclient.Client('admin', 'password', 'project8april', 'http://localhost:5000/v2.0', service_type="volume")
-        print cc.volumes.list()
+        #cc = cclient.Client('admin', 'password', 'project8april', 'http://localhost:5000/v2.0', service_type="volume")
+        #print cc.volumes.list()
 
     def _do_attach_shared_storage(self, user_id, cinder_id, instance_id):
 
@@ -98,9 +109,8 @@ class Task():
         else:
             print "User authorized"
 
-    def _locate_block_format_and_mount
+    def _locate_block_format_and_mount(self, filesystem, mountpoint, size):
 
-        """
         #print filesystem, mountpoint, force
 
         stdin, stdout, stderr = self.ssh.exec_command("sudo lsblk -b --output NAME,SIZE,TYPE,FSTYPE,MOUNTPOINT")
@@ -153,11 +163,11 @@ class Task():
             print stdout.read()
             print stderr.read()
             cmd_mount = "sudo mkdir -p " + mountpoint
-            stdin, stdout, stderr = self.ssh.exec_command(cmd_mount)
+            #stdin, stdout, stderr = self.ssh.exec_command(cmd_mount)
             cmd_mount = "sudo mount " + dev_name + " " + mountpoint
-            stdin, stdout, stderr = self.ssh.exec_command(cmd_mount)
-            print stdout.read()
-            print stderr.read()
+            #stdin, stdout, stderr = self.ssh.exec_command(cmd_mount)
+            #print stdout.read()
+            #print stderr.read()
             return
 
         else:
@@ -171,13 +181,12 @@ class Task():
             # TODO: safe dev_name
             # TODO: Check for already existing mountpoint
             cmd_mount = "sudo mkdir -p " + mountpoint
-            stdin, stdout, stderr = self.ssh.exec_command(cmd_mount)
+            #stdin, stdout, stderr = self.ssh.exec_command(cmd_mount)
             cmd_mount = "sudo mount " + dev_name + " " + mountpoint
-            stdin, stdout, stderr = self.ssh.exec_command(cmd_mount)
-            print stdout.read()
-            print stderr.read()
+            #stdin, stdout, stderr = self.ssh.exec_command(cmd_mount)
+            #print stdout.read()
+            #print stderr.read()
             return
-        """
 
-    def do_terminate(self):
+    def _do_terminate(self):
         self.ssh.close()

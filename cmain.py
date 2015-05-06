@@ -8,7 +8,7 @@ import sys
 # Local modules
 import ctask as ctask
 
-def parse_input(self):
+def parse_input():
     parser = argparse.ArgumentParser(description="Utility to carry out tasks on a running virtual machine")
 
     """
@@ -51,24 +51,16 @@ def main():
     # Send credential info to task module
     task.set_credentials(cinput.host, cinput.user, cinput.key, cinput.windows) # Check for error
 
-    # Perform login to the virtual machine
-    ret = task.do_login()
-    if ret == -1:
-        logging.critical("Some SSH error")
-
     # Now call the specific task
     if cinput.format or cinput.mountpoint:
         ret = task.do_task(ctask.TASKTYPE.TASK_MOUNT, cinput.format, cinput.mountpoint, cinput.size)
         if ret == -1:
             logging.critical("Some error")
+
     elif cinput.osuser:
         ret = task.do_task(ctask.TASKTYPE.TASK_SHARED_STORAGE, cinput.osuser, cinput.cinder_id, cinput.instance_id)
         if ret == -1:
             logging.critical("Some error")
-
-    # Disconnect the SSH session
-    ret = task.do_terminate()
-
 
 if __name__ == "__main__":
     main()
