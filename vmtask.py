@@ -88,9 +88,26 @@ class Task():
         if ord(char) < 1 or ord(char) > 127: return ''
         else: return char
 
+    def _exec_sudo_command(self, cmd):
+
+        transport = self._ssh.get_transport()
+        session = transport.open_session()
+        session.get_pty()
+        session.exec_command(cmd)
+
+        stdin = session.makefile('wb', -1)
+        stdout = session.makefile('rb', -1)
+
+        return stdin, stdout
+
     def _do_format_and_mount(self, filesystem, mountpoint, cinder_id):
 
-        stdin, stdout, stderr = self._ssh.exec_command("pwd; ls -al")
+        stdin, stdout = _exec_sudo_command("sudo whoami")
+
+        print stdout.read()
+#        print stderr.read()
+
+        stdin, stdout, stderr = self._ssh.exec_command("sudo pwd; ls -al")
         print stdout.read()
         print stderr.read()
 
