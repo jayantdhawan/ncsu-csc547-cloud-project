@@ -11,32 +11,21 @@ import vmtask
 def parse_input():
     parser = argparse.ArgumentParser(description="Utility to carry out tasks on a running virtual machine")
 
-    """
-    list_tasks = {'mount' : 'Mount an already existing block format it and mount it'}
-    subparser = parser.add_subparsers(dest='task', help = "commands based on the list of tasks")
-    task_subparsers = []
-    for i in list_of_tasks.keys():
-        task_subparsers.append(subparser.add_parser(i, help=list_of_tasks[i]))
-        if i=='mount':
-            task_subparsers[len(task_subparsers)-1].add_argument('-a', action="store_true", dest="a", default="False", help="This is true if you want to retrieve an already existing cinder block")
-            task_subparsers[len(task_subparsers)-1].add_argument('--file-system', action="store", dest="fs", help="Type of file system the block needs to be formatted in")
-            task_subparsers[len(task_subparsers)-1].add_argument('--mount', action="store", dest="mount", help="Mount point of the cinder block")
-            break
-    """
-    group_mount = parser.add_argument_group('Options')
-    group_mount.add_argument('--host', required=True, action="store", dest="host", help="The host name or IP address of the VM instance")
-    group_mount.add_argument('--user', required=True, action="store", dest="user", help="Username to login with")
-    group_mount.add_argument('--key', required=True, action="store", dest="key", help="Path of the key")
-    group_mount.add_argument('--windows', required=False, action="store_true", default=False, dest="windows", help="flag indicating whether the VM is Windows-based; otherwise it is assumed to be Linux-based")
+    subparser = parser.add_subparsers(dest='task', metavar="<subcommand>")
 
-    group_mount = parser.add_argument_group('Format and mount options')
-    group_mount.add_argument('--format', metavar='<filesystem type>', required=False, dest='format', choices= ['ext2', 'ext3', 'ext4'], help='filesystem type to format the block with')
-    group_mount.add_argument('--mountpoint', metavar='<mountpoint>', required=False, dest='mountpoint', help='directory path to mount at')
+    parser_mount = subparser.add_parser('mount', help="Format (optional) and mount a device")
+    parser_mount.add_argument('--host', required=True, action="store", dest="host", help="Host name or IP address of the VM instance")
+    parser_mount.add_argument('--user', required=True, action="store", dest="user", help="Alias for the user account on VM's host OS")
+    parser_mount.add_argument('--keyfile', required=False, action="store", dest="key", help="(Optional) Path of the file containing private key; if omitted, it will be fetched from the database")
+    parser_mount.add_argument('--windows', required=False, action="store_true", default=False, dest="windows", help="(Optional) Flag indicating whether the VM is Windows-based; if omitted it is assumed to be Linux-based")
+    parser_mount.add_argument('--cinder-id', metavar='<cinder-id>', required=True, dest='cinder_id', help='Cinder block ID needed to fetch device file name')
+    parser_mount.add_argument('--format', metavar='<filesystem type>', required=False, dest='format', choices= ['ext2', 'ext3', 'ext4'], help='(Optional) Filesystem type to format the block with; if omitted, the device is assumed to be already formatted, and only mounted')
+    parser_mount.add_argument('--mountpoint', metavar='<mountpoint>', required=True, dest='mountpoint', help='Directory path to mount at; if the path does not exist, it will be created')
 
-    group_mount = parser.add_argument_group('Attaching shared storage options')
-    group_mount.add_argument('--osuser', required=False, dest='osuser', help='OpenStack user name')
-    group_mount.add_argument('--cinder-id', dest='cinder_id', help='volume ID of the Cinder volume to be attached')
-    group_mount.add_argument('--instance-id', dest='instance_id', help='instance ID to attach the volume to')
+    parser_mount = subparser.add_parser('attach', help="Attach a storage volume to an instance for a user")
+    parser_mount.add_argument('--osuser', required=False, dest='osuser', help='OpenStack user name')
+    parser_mount.add_argument('--cinder-id', dest='cinder_id', help='volume ID of the Cinder volume to be attached')
+    parser_mount.add_argument('--instance-id', dest='instance_id', help='instance ID to attach the volume to')
 
     return parser.parse_args()
 
@@ -50,13 +39,13 @@ def main():
     task.set_credentials(argv.host, argv.user, argv.key, argv.windows) # Check for error
 
     # Now call the specific task
-    if argv.osuser or argv.cinder_id or argv.instance_id:
+    if argv.task == 'attach':
         ret = task.do_task(vmtask.TASKTYPE.TASK_SHARED_STORAGE, argv.osuser, argv.cinder_id, argv.instance_id)
         if ret == -1:
             logging.critical("Some error")
 
-    if argv.format or argv.mountpoint:
-        ret = task.do_task(vmtask.TASKTYPE.TASK_FORMAT_MOUNT, argv.format, argv.mountpoint)
+    elif argv.task == 'mount':
+        ret = task.do_task(vmtask.TASKTYPE.TASK_FORMAT_MOUNT, argv.format, argv.mountpoint, argv.cinder_id)
         if ret == -1:
             logging.critical("Some error")
 

@@ -71,8 +71,6 @@ class Task():
             if ret == -1:
                 logging.critical("Some SSH error")
 	
-        # TODO: More sanity checks?
-
         if task_type == TASKTYPE.TASK_FORMAT_MOUNT:
             self._do_format_and_mount(*args)
 
@@ -85,47 +83,40 @@ class Task():
         # Disconnect the SSH session
         ret = self._do_terminate()
 
-
     def _onlyascii(self, char):
 
         if ord(char) < 1 or ord(char) > 127: return ''
         else: return char
 
-    def _do_format_and_mount(self, filesystem, mountpoint, size,cinder_id):
+    def _do_format_and_mount(self, filesystem, mountpoint, cinder_id):
 
-        #self._locate_block_format_and_mount(filesystem, mountpoint,size)
-
-        #stdin, stdout, stderr = self.ssh.exec_command("pwd; ls -al")
-        #print stdout.read()
-        #print stderr.read()
-
-        stdin, stdout, stderr = self.ssh.exec_command("pwd; ls -al")
+        stdin, stdout, stderr = self._ssh.exec_command("pwd; ls -al")
         print stdout.read()
         print stderr.read()
 
-        # dummy
         cc = cclient.Client('puser6may', 'password', 'project6may', 'http://localhost:5000/v2.0', service_type="volume")
         print "object created", cinder_id
-	list_cinder = cc.volumes.get(cinder_id)._info["attachments"]
-	dev_name = list_cinder[0]["device"]
-	
-	dev_name = "/dev/vdb"
-	cmd_format = "sudo mkfs -t " + filesystem + " " + dev_name
-	chan = self.ssh.get_transport().open_session()
+        list_cinder = cc.volumes.get(cinder_id)._info["attachments"]
+        dev_name = list_cinder[0]["device"]
 
-	chan.get_pty()
-	stdin, stdout, stderr = self.ssh.exec_command(cmd_format)
-	print stdout.read()
-	print stderr.read()
+        dev_name = "/dev/vdb"
+        cmd_format = "sudo mkfs -t " + filesystem + " " + dev_name
+        chan = self._ssh.get_transport().open_session()
 
-	cmd_mount = "sudo mkdir -p " + mountpoint
-	stdin, stdout, stderr = self.ssh.exec_command(cmd_mount)
-	cmd_mount = "sudo mount " + dev_name + " " + mountpoint
-	stdin, stdout, stderr = self.ssh.exec_command(cmd_mount)
-	print stdout.read()
-	print stderr.read()
-	print "output"
-	return
+        chan.get_pty()
+        stdin, stdout, stderr = self._ssh.exec_command(cmd_format)
+        print stdout.read()
+        print stderr.read()
+
+        cmd_mount = "sudo mkdir -p " + mountpoint
+        stdin, stdout, stderr = self._ssh.exec_command(cmd_mount)
+        cmd_mount = "sudo mount " + dev_name + " " + mountpoint
+        stdin, stdout, stderr = self._ssh.exec_command(cmd_mount)
+        print stdout.read()
+        print stderr.read()
+        print "output"
+
+        return
 
     def _do_attach_shared_storage(self, user_id, cinder_id, instance_id):
 
@@ -137,8 +128,6 @@ class Task():
             print "User authorized"
 
     def _locate_block_format_and_mount(self, filesystem, mountpoint, size):
-
-        #print filesystem, mountpoint, force
 
         stdin, stdout, stderr = self.ssh.exec_command("sudo lsblk -b --output NAME,SIZE,TYPE,FSTYPE,MOUNTPOINT")
 
@@ -183,18 +172,16 @@ class Task():
                     dev_name = "/dev/" + info_new[i-1]
                     break
                 i = i + 3
-            # TODO: safe dev_name
-            # TODO: Check for already existing mountpoint
             cmd_format = "sudo mkfs -t " + filesystem + " " + dev_name
             stdin, stdout, stderr = self.ssh.exec_command(cmd_format)
             print stdout.read()
             print stderr.read()
             cmd_mount = "sudo mkdir -p " + mountpoint
-            #stdin, stdout, stderr = self.ssh.exec_command(cmd_mount)
+            stdin, stdout, stderr = self.ssh.exec_command(cmd_mount)
             cmd_mount = "sudo mount " + dev_name + " " + mountpoint
-            #stdin, stdout, stderr = self.ssh.exec_command(cmd_mount)
-            #print stdout.read()
-            #print stderr.read()
+            stdin, stdout, stderr = self.ssh.exec_command(cmd_mount)
+            print stdout.read()
+            print stderr.read()
             return
 
         else:
@@ -205,15 +192,13 @@ class Task():
                     filesystem = info_fs[i+2]
                     break
                 i = i + 4
-            # TODO: safe dev_name
-            # TODO: Check for already existing mountpoint
             cmd_mount = "sudo mkdir -p " + mountpoint
-            #stdin, stdout, stderr = self.ssh.exec_command(cmd_mount)
+            stdin, stdout, stderr = self.ssh.exec_command(cmd_mount)
             cmd_mount = "sudo mount " + dev_name + " " + mountpoint
-            #stdin, stdout, stderr = self.ssh.exec_command(cmd_mount)
+            stdin, stdout, stderr = self.ssh.exec_command(cmd_mount)
             #print stdout.read()
             #print stderr.read()
             return
 
     def _do_terminate(self):
-        self.ssh.close()
+        self._ssh.close()
