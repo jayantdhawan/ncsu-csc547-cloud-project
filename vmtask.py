@@ -12,47 +12,51 @@ import paramiko
 import cinderclient.v1.client as cclient
 
 # Local modules
-import cmapper as mapper
+import vmmapper as mapper
 
 # Enum for VM type
 class TASKTYPE:
-    TASK_MOUNT = 1
+    TASK_FORMAT_MOUNT = 1
     TASK_SHARED_STORAGE = 2
     TASK_OTHERS = 3
 
 class Task():
 
     def __init__(self):
-        self.host = ''
-        self.user = ''
-        self.keypath = ''
-        self.ssh = ''
+        self._host = ''
+        self._user = ''
+        self._keypath = ''
+        self._ssh = ''
 
     def set_credentials(self, host, user, key, isWindows):
-        self.host = host
-        self.user = user
-        self.keypath = key
-        self.isWindows = isWindows
+        self._host = host
+        self._user = user
+        self._keypath = key
+        self._isWindows = isWindows
 
     def _do_login(self):
 
-        if not self.isWindows:
+        if not self._isWindows:
+
+            if self._ssh:
+                return -1
+
             # TODO: Handle errors at each step
             # Create a new SSHClient object from Paramiko
-            self.ssh = paramiko.SSHClient()
+            self._ssh = paramiko.SSHClient()
 
             # Prompt for missing host key in known_hosts set to auto
             # TODO: Give an option to not do this?
-            self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            self._ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
             # Read key from private key file
             # TODO: Ability to add different sources of keys
-            key = paramiko.RSAKey.from_private_key_file(self.keypath)
+            key = paramiko.RSAKey.from_private_key_file(self._keypath)
 
             # Attempt to connect to SSH
             # TODO: Key sources!
             # TODO: Check for error
-            self.ssh.connect(hostname = str(self.host), username = str(self.user), pkey = key)
+            self._ssh.connect(hostname = str(self._host), username = str(self._user), pkey = key)
 
             return True
 
@@ -61,8 +65,7 @@ class Task():
             logging.error("Windows-based virtual machines not supported")
 
     def do_task(self, task_type, *args):
-	
-        if not self.ssh:
+        if not self._ssh:
             # Perform login to the virtual machine
             ret = self._do_login()
             if ret == -1:
@@ -70,9 +73,8 @@ class Task():
 	
         # TODO: More sanity checks?
 
-        if task_type == TASKTYPE.TASK_MOUNT:
-		print "Inside Task Mount"
-		self._do_format_and_mount(*args)
+        if task_type == TASKTYPE.TASK_FORMAT_MOUNT:
+            self._do_format_and_mount(*args)
 
         elif task_type == TASKTYPE.TASK_SHARED_STORAGE:
             self._do_attach_shared_storage(*args)
@@ -96,6 +98,10 @@ class Task():
         #stdin, stdout, stderr = self.ssh.exec_command("pwd; ls -al")
         #print stdout.read()
         #print stderr.read()
+
+        stdin, stdout, stderr = self.ssh.exec_command("pwd; ls -al")
+        print stdout.read()
+        print stderr.read()
 
         # dummy
         cc = cclient.Client('puser6may', 'password', 'project6may', 'http://localhost:5000/v2.0', service_type="volume")
