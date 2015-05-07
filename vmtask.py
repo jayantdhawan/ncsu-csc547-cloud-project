@@ -133,7 +133,7 @@ class Task():
         stdin, stdout = self._exec_sudo_command(cmd)
 
         cmd = "sudo mount " + dev_name + " " + mountpoint
-        stdin, stdout, stderr = self._exec_sudo_command(cmd)
+        stdin, stdout = self._exec_sudo_command(cmd)
         print stdout.read()
 
         return
