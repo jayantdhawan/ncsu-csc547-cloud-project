@@ -20,7 +20,11 @@ def parse_input():
     parser_mount.add_argument('--windows', required=False, action="store_true", default=False, dest="windows", help="(Optional) Flag indicating whether the VM is Windows-based; if omitted it is assumed to be Linux-based")
     parser_mount.add_argument('--cinder-id', metavar='<cinder-id>', required=True, dest='cinder_id', help='Cinder block ID needed to fetch device file name')
     parser_mount.add_argument('--format', metavar='<filesystem type>', required=False, dest='format', choices= ['ext2', 'ext3', 'ext4'], help='(Optional) Filesystem type to format the block with; if omitted, the device is assumed to be already formatted, and only mounted')
-    parser_mount.add_argument('--mountpoint', metavar='<mountpoint>', required=True, dest='mountpoint', help='Directory path to mount at; if the path does not exist, it will be created')
+    parser_mount.add_argument('--mountpoint', metavar='<mountpoint>', required=True, dest='mountpoint', help='Directory path to mount at; if the path does not exist, it will be created')    
+    parser_mount.add_argument('--os-user', metavar='<OS_USERNAME>', required=False, dest='os_user', help='(Optional) Alias for the OpenStack user for connecting to the Cinder API service; can be omitted with setting env variable OS_USERNAME')
+    parser_mount.add_argument('--os-password', metavar='<OS_PASSWORD>', required=False, dest='os_password', help='(Optional) Password for the OpenStack user; can be omitted with setting env variable OS_PASSWORD')
+    parser_mount.add_argument('--os-tenant-name', metavar='<OS_TENANT_NAME>', required=False, dest='os_tenant_name', help='(Optional) OpenStack tenant (project) name; can be omitted with setting env variable OS_TENANT_NAME')
+    parser_mount.add_argument('--os-auth-url', metavar='<OS_AUTH_URL>', required=False, dest='os_auth_url', help='(Optional) OpenStack authentication URL; can be omitted with setting env variable OS_AUTH_URL')
 
     parser_mount = subparser.add_parser('attach', help="Attach a storage volume to an instance for a user")
     parser_mount.add_argument('--osuser', required=False, dest='osuser', help='OpenStack user name')
@@ -46,7 +50,7 @@ def main():
             logging.critical("Some error")
 
     elif argv.task == 'mount':
-        ret = task.do_task(vmtask.TASKTYPE.TASK_FORMAT_MOUNT, argv.format, argv.mountpoint, argv.cinder_id)
+        ret = task.do_task(vmtask.TASKTYPE.TASK_FORMAT_MOUNT, argv.format, argv.mountpoint, argv.cinder_id, argv.os_user, argv.os_password, argv.os_tenant_name, argv.os_auth_url)
         if ret == -1:
             logging.critical("Some error")
 

@@ -101,27 +101,28 @@ class Task():
 
         return stdin, stdout
 
-    def _do_format_and_mount(self, filesystem, mountpoint, cinder_id, os_user, os_password, os_project):
+    def _do_format_and_mount(self, filesystem, mountpoint, cinder_id, os_user, os_password, os_tenant_name, os_auth_url):
 
         #stdin, stdout = self._exec_sudo_command("sudo whoami")
 
         #print stdout.read()
 
+        print os_user
         # Prepare credentials required to connect to Cinder API service
         if not os_user:
             os_user = os.environ['OS_USERNAME']
         if not os_password:
             os_password = os.environ['OS_PASSWORD']
-        if not os_project:
-            os_project = os.environ['OS_TENANT_NAME']
+        if not os_tenant_name:
+            os_tenant_name = os.environ['OS_TENANT_NAME']
         if not os_auth_url:
             os_auth_url = os.environ['OS_AUTH_URL']
 
-        if not os_user or not os_password or not os_project or not os_auth_url:
+        if not os_user or not os_password or not os_tenant_name or not os_auth_url:
             return -1
 
         # Connect to Cinder API service
-        cc = cclient.Client(os_user, os_password, os_project, os_auth_url, service_type="volume")
+        cc = cclient.Client(os_user, os_password, os_tenant_name, os_auth_url, service_type="volume")
 
         # Retrieve info about this volume
         list_cinder = cc.volumes.get(cinder_id)._info["attachments"]
