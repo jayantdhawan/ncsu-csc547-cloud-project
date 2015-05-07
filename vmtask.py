@@ -103,11 +103,6 @@ class Task():
 
     def _do_format_and_mount(self, filesystem, mountpoint, cinder_id, os_user, os_password, os_tenant_name, os_auth_url):
 
-        #stdin, stdout = self._exec_sudo_command("sudo whoami")
-
-        #print stdout.read()
-
-        print os_user
         # Prepare credentials required to connect to Cinder API service
         if not os_user:
             os_user = os.environ['OS_USERNAME']
@@ -139,27 +134,40 @@ class Task():
         print stderr.read()
 
         cmd = "sudo mkdir -p " + mountpoint
-        stdin, stdout, stderr = self._ssh.exec_command(cmd_mount)
+        stdin, stdout, stderr = self._exec_sudo_command(cmd)
 
-        cmd_mount = "sudo mount " + dev_name + " " + mountpoint
-        stdin, stdout, stderr = self._ssh.exec_command(cmd_mount)
+        cmd = "sudo mount " + dev_name + " " + mountpoint
+        stdin, stdout, stderr = self._exec_sudo_command(cmd)
         print stdout.read()
         print stderr.read()
 
         return
 
-    def _do_attach_shared_storage(self, user_id, cinder_id, instance_id, dev_name):
+    def _do_attach_shared_storage(self, user_id, cinder_id, instance_id, dev_name, os_user, os_password, os_tenant_name, os_auth_url):
 
-        # dummy
         if not mapper.Mapper.check_exist_user_cinder(user_id, cinder_id):
             print "User not authorized"
 
         else:
             print "User authorized"
-	    client = nova_client.Client('puser6may', 'password', 'project6may', 'http://localhost:5000/v2.0', service_type="compute")
-	    client.volumes.create_server_volume(instance_id,cinder_id,dev_name);
-	    
-	return
+
+        # Prepare credentials required to connect to Cinder API service
+        if not os_user:
+            os_user = os.environ['OS_USERNAME']
+        if not os_password:
+            os_password = os.environ['OS_PASSWORD']
+        if not os_tenant_name:
+            os_tenant_name = os.environ['OS_TENANT_NAME']
+        if not os_auth_url:
+            os_auth_url = os.environ['OS_AUTH_URL']
+
+        if not os_user or not os_password or not os_tenant_name or not os_auth_url:
+            return -1
+
+	    client = nova_client.Client(os_user, os_password, os_tenant_name, os_auth_url, os_auth_url, service_type="compute")
+	    client.volumes.create_server_volume(instance_id, cinder_id, dev_name)
+
+        return
 
     def _locate_block_format_and_mount(self, filesystem, mountpoint, size):
 

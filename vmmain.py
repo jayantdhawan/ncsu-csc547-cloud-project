@@ -31,6 +31,10 @@ def parse_input():
     parser_mount.add_argument('--cinder-id', dest='cinder_id', help='volume ID of the Cinder volume to be attached')
     parser_mount.add_argument('--instance-id', dest='instance_id', help='instance ID to attach the volume to')
     parser_mount.add_argument('--dev-name', dest='dev_name', help='Device Name to attach the volume to')
+    parser_mount.add_argument('--os-user', metavar='<OS_USERNAME>', required=False, dest='os_user', help='(Optional) Alias for the OpenStack user for connecting to the Cinder API service; can be omitted with setting env variable OS_USERNAME')
+    parser_mount.add_argument('--os-password', metavar='<OS_PASSWORD>', required=False, dest='os_password', help='(Optional) Password for the OpenStack user; can be omitted with setting env variable OS_PASSWORD')
+    parser_mount.add_argument('--os-tenant-name', metavar='<OS_TENANT_NAME>', required=False, dest='os_tenant_name', help='(Optional) OpenStack tenant (project) name; can be omitted with setting env variable OS_TENANT_NAME')
+    parser_mount.add_argument('--os-auth-url', metavar='<OS_AUTH_URL>', required=False, dest='os_auth_url', help='(Optional) OpenStack authentication URL; can be omitted with setting env variable OS_AUTH_URL')
 
     return parser.parse_args()
 
@@ -45,7 +49,7 @@ def main():
 
     # Now call the specific task
     if argv.task == 'attach':
-        ret = task.do_task(vmtask.TASKTYPE.TASK_SHARED_STORAGE, argv.osuser, argv.cinder_id, argv.instance_id, argv.dev_name)
+        ret = task.do_task(vmtask.TASKTYPE.TASK_SHARED_STORAGE, argv.osuser, argv.cinder_id, argv.instance_id, argv.dev_name, argv.os_user, argv.os_password, argv.os_tenant_name, argv.os_auth_url)
         if ret == -1:
             logging.critical("Some error")
 
