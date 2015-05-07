@@ -6,6 +6,7 @@ from subprocess import PIPE
 import subprocess
 import re
 import string
+import os
 
 # Third-party modules
 import paramiko
@@ -100,38 +101,49 @@ class Task():
 
         return stdin, stdout
 
-    def _do_format_and_mount(self, filesystem, mountpoint, cinder_id):
+    def _do_format_and_mount(self, filesystem, mountpoint, cinder_id, os_user, os_password, os_project):
 
-        stdin, stdout = _exec_sudo_command("sudo whoami")
+        #stdin, stdout = self._exec_sudo_command("sudo whoami")
 
-        print stdout.read()
-#        print stderr.read()
+        #print stdout.read()
 
-        stdin, stdout, stderr = self._ssh.exec_command("sudo pwd; ls -al")
-        print stdout.read()
-        print stderr.read()
+        # Prepare credentials required to connect to Cinder API service
+        if not os_user:
+            os_user = os.environ['OS_USERNAME']
+        if not os_password:
+            os_password = os.environ['OS_PASSWORD']
+        if not os_project:
+            os_project = os.environ['OS_TENANT_NAME']
+        if not os_auth_url:
+            os_auth_url = os.environ['OS_AUTH_URL']
 
-        cc = cclient.Client('puser6may', 'password', 'project6may', 'http://localhost:5000/v2.0', service_type="volume")
-        print "object created", cinder_id
+        if not os_user or not os_password or not os_project or not os_auth_url:
+            return -1
+
+        # Connect to Cinder API service
+        cc = cclient.Client(os_user, os_password, os_project, os_auth_url, service_type="volume")
+
+        # Retrieve info about this volume
         list_cinder = cc.volumes.get(cinder_id)._info["attachments"]
         dev_name = list_cinder[0]["device"]
 
-        dev_name = "/dev/vdb"
-        cmd_format = "sudo mkfs -t " + filesystem + " " + dev_name
-        chan = self._ssh.get_transport().open_session()
+        print dev_name
+        return
 
-        chan.get_pty()
-        stdin, stdout, stderr = self._ssh.exec_command(cmd_format)
+        dev_name = "/dev/vdb"
+        cmd = "sudo mkfs -t " + filesystem + " " + dev_name
+
+        stdin, stdout, stderr = self._exec_sudo_command(cmd)
         print stdout.read()
         print stderr.read()
 
-        cmd_mount = "sudo mkdir -p " + mountpoint
+        cmd = "sudo mkdir -p " + mountpoint
         stdin, stdout, stderr = self._ssh.exec_command(cmd_mount)
+
         cmd_mount = "sudo mount " + dev_name + " " + mountpoint
         stdin, stdout, stderr = self._ssh.exec_command(cmd_mount)
         print stdout.read()
         print stderr.read()
-        print "output"
 
         return
 
