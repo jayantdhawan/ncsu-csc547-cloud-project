@@ -10,7 +10,7 @@ import string
 # Third-party modules
 import paramiko
 import cinderclient.v1.client as cclient
-
+import novaclient.v1_1.client as nova_client
 # Local modules
 import vmmapper as mapper
 
@@ -127,7 +127,7 @@ class Task():
 	print "output"
 	return
 
-    def _do_attach_shared_storage(self, user_id, cinder_id, instance_id):
+    def _do_attach_shared_storage(self, user_id, cinder_id, instance_id, dev_name):
 
         # dummy
         if not mapper.Mapper.check_exist_user_cinder(user_id, cinder_id):
@@ -135,6 +135,10 @@ class Task():
 
         else:
             print "User authorized"
+	    client = nova_client.Client('puser6may', 'password', 'project6may', 'http://localhost:5000/v2.0', service_type="compute")
+	    client.volumes.create_server_volume(instance_id,cinder_id,dev_name);
+	    
+	return
 
     def _locate_block_format_and_mount(self, filesystem, mountpoint, size):
 

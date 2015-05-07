@@ -37,7 +37,7 @@ def parse_input():
     group_mount.add_argument('--osuser', required=False, dest='osuser', help='OpenStack user name')
     group_mount.add_argument('--cinder-id', dest='cinder_id', help='volume ID of the Cinder volume to be attached')
     group_mount.add_argument('--instance-id', dest='instance_id', help='instance ID to attach the volume to')
-
+    group_mount.add_argument('--dev-name', dest='dev_name', help='Device Name to attach the volume to')
     return parser.parse_args()
 
 def main():
@@ -51,7 +51,7 @@ def main():
 
     # Now call the specific task
     if argv.osuser or argv.cinder_id or argv.instance_id:
-        ret = task.do_task(vmtask.TASKTYPE.TASK_SHARED_STORAGE, argv.osuser, argv.cinder_id, argv.instance_id)
+        ret = task.do_task(vmtask.TASKTYPE.TASK_SHARED_STORAGE, argv.osuser, argv.cinder_id, argv.instance_id, argv.dev_name)
         if ret == -1:
             logging.critical("Some error")
 

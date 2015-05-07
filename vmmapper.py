@@ -201,7 +201,9 @@ class Mapper:
 
 """
 mapper = Mapper()
-#print mapper.insert_user_storage_grp('a',1)
+print mapper.insert_user_storage_grp('d183a84d774a4e21b854fffb86859a03',3)
+print mapper.insert_storage_grp_cinder(3,'4c6a5100-7ad3-49c5-9b2d-8ec586de29c0')
+
 #print mapper.insert_user_storage_grp('b',1)
 #print mapper.insert_user_storage_grp('a',2)
 #print mapper.insert_storage_grp_cinder(1,'c')
