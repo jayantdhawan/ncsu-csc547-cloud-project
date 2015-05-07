@@ -123,23 +123,18 @@ class Task():
         list_cinder = cc.volumes.get(cinder_id)._info["attachments"]
         dev_name = list_cinder[0]["device"]
 
-        print dev_name
-        return
-
         dev_name = "/dev/vdb"
         cmd = "sudo mkfs -t " + filesystem + " " + dev_name
 
-        stdin, stdout, stderr = self._exec_sudo_command(cmd)
+        stdin, stdout = self._exec_sudo_command(cmd)
         print stdout.read()
-        print stderr.read()
 
         cmd = "sudo mkdir -p " + mountpoint
-        stdin, stdout, stderr = self._exec_sudo_command(cmd)
+        stdin, stdout = self._exec_sudo_command(cmd)
 
         cmd = "sudo mount " + dev_name + " " + mountpoint
         stdin, stdout, stderr = self._exec_sudo_command(cmd)
         print stdout.read()
-        print stderr.read()
 
         return
 
