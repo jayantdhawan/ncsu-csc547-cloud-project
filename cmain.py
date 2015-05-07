@@ -34,7 +34,8 @@ def parse_input():
     group_mount.add_argument('--format', metavar='<type>', required=False, dest='format', choices= ['ext2', 'ext3', 'ext4'], help='filesystem type to format the block with')
     group_mount.add_argument('--mountpoint', metavar='<mountpoint>', dest='mountpoint', help='directory path to mount at')
     group_mount.add_argument('--size', metavar='<size in bytes>', dest='size', help='size of the block to be found')
-
+    #group_mount.add_argument('--cinder-id', dest='cinder_id', help='cinder-id of the block to be found')
+  
     group_mount = parser.add_argument_group('Attaching shared storage options')
     group_mount.add_argument('--osuser', required=False, dest='osuser', help='OpenStack user name')
     group_mount.add_argument('--cinder-id', dest='cinder_id', help='volume ID of the Cinder volume to be attached')
@@ -53,7 +54,7 @@ def main():
 
     # Now call the specific task
     if cinput.format or cinput.mountpoint:
-        ret = task.do_task(ctask.TASKTYPE.TASK_MOUNT, cinput.format, cinput.mountpoint, cinput.size)
+        ret = task.do_task(ctask.TASKTYPE.TASK_MOUNT, cinput.format, cinput.mountpoint, cinput.size, cinput.cinder_id)
         if ret == -1:
             logging.critical("Some error")
 
