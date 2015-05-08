@@ -96,7 +96,7 @@ class Task():
 
     def _do_format_and_mount(self, filesystem, mountpoint, cinder_id, os_user, os_password, os_tenant_name, os_auth_url):
 
-	 if not self._ssh:
+        if not self._ssh:
             # Perform login to the virtual machine
             ret = self._do_login()
             if ret == -1:
@@ -122,24 +122,24 @@ class Task():
         list_cinder = cc.volumes.get(cinder_id)._info["attachments"]
         dev_name = list_cinder[0]["device"]
 
-	#print dev_name
-	# TODO: Hardcoded value below!
+        #print dev_name
+        # TODO: Hardcoded value below!
         dev_name = "/dev/vdc"
         
-	if filesystem:
-		cmd = "sudo mkfs -t " + filesystem + " " + dev_name
-	        stdin, stdout = self._exec_sudo_command(cmd)
-	        print stdout.read()
+        if filesystem:
+            cmd = "sudo mkfs -t " + filesystem + " " + dev_name
+                stdin, stdout = self._exec_sudo_command(cmd)
+                print stdout.read()
 
         cmd = "sudo mkdir -p " + mountpoint
         stdin, stdout = self._exec_sudo_command(cmd)
-	stdout.read() # Flush
+        stdout.read() # Flush
 
         cmd = "sudo mount " + dev_name + " " + mountpoint
         stdin, stdout = self._exec_sudo_command(cmd)
         print stdout.read()
 
-	# Disconnect the SSH session
+        # Disconnect the SSH session
         ret = self._do_terminate()
 
         return
@@ -148,7 +148,7 @@ class Task():
 
         if not mapper.Mapper.check_exist_user_cinder(user_id, cinder_id):
             print "User not authorized"
-
+            return -1
         else:
             print "User authorized"
 
@@ -165,8 +165,8 @@ class Task():
         if not os_user or not os_password or not os_tenant_name or not os_auth_url:
             return -1
 
-	    client = nova_client.Client(os_user, os_password, os_tenant_name, os_auth_url, os_auth_url, service_type="compute")
-	    client.volumes.create_server_volume(instance_id, cinder_id, dev_name)
+        client = nova_client.Client(os_user, os_password, os_tenant_name, os_auth_url, os_auth_url, service_type="compute")
+        client.volumes.create_server_volume(instance_id, cinder_id, dev_name)
 
         return
 
