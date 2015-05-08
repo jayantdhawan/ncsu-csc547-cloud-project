@@ -46,7 +46,7 @@ def main():
 
     # Send credential info to task module
     if argv.task == 'mount':
-	task.set_credentials(argv.host, argv.user, argv.key, argv.windows) # Check for error
+        task.set_credentials(argv.host, argv.user, argv.key, argv.windows) # Check for error
 
     # Now call the specific task
     if argv.task == 'attach':

@@ -128,8 +128,8 @@ class Task():
         
         if filesystem:
             cmd = "sudo mkfs -t " + filesystem + " " + dev_name
-                stdin, stdout = self._exec_sudo_command(cmd)
-                print stdout.read()
+            stdin, stdout = self._exec_sudo_command(cmd)
+            print stdout.read()
 
         cmd = "sudo mkdir -p " + mountpoint
         stdin, stdout = self._exec_sudo_command(cmd)
