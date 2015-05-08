@@ -27,7 +27,7 @@ def parse_input():
     parser_mount.add_argument('--os-auth-url', metavar='<OS_AUTH_URL>', required=False, dest='os_auth_url', help='(Optional) OpenStack authentication URL; can be omitted with setting env variable OS_AUTH_URL')
 
     parser_mount = subparser.add_parser('attach', help="Attach a storage volume to an instance for a user")
-    parser_mount.add_argument('--osuser', required=False, dest='osuser', help='OpenStack user name')
+    parser_mount.add_argument('--user', required=False, dest='user', help='OpenStack user name')
     parser_mount.add_argument('--cinder-id', dest='cinder_id', help='volume ID of the Cinder volume to be attached')
     parser_mount.add_argument('--instance-id', dest='instance_id', help='instance ID to attach the volume to')
     parser_mount.add_argument('--dev-name', dest='dev_name', help='Device Name to attach the volume to')
@@ -45,11 +45,12 @@ def main():
     task = vmtask.Task()
 
     # Send credential info to task module
-    task.set_credentials(argv.host, argv.user, argv.key, argv.windows) # Check for error
+    if argv.task == 'mount':
+	task.set_credentials(argv.host, argv.user, argv.key, argv.windows) # Check for error
 
     # Now call the specific task
     if argv.task == 'attach':
-        ret = task.do_task(vmtask.TASKTYPE.TASK_SHARED_STORAGE, argv.osuser, argv.cinder_id, argv.instance_id, argv.dev_name, argv.os_user, argv.os_password, argv.os_tenant_name, argv.os_auth_url)
+        ret = task.do_task(vmtask.TASKTYPE.TASK_SHARED_STORAGE, argv.user, argv.cinder_id, argv.instance_id, argv.dev_name, argv.os_user, argv.os_password, argv.os_tenant_name, argv.os_auth_url)
         if ret == -1:
             logging.critical("Some error")
 

@@ -66,11 +66,6 @@ class Task():
             logging.error("Windows-based virtual machines not supported")
 
     def do_task(self, task_type, *args):
-        if not self._ssh:
-            # Perform login to the virtual machine
-            ret = self._do_login()
-            if ret == -1:
-                logging.critical("Some SSH error")
 	
         if task_type == TASKTYPE.TASK_FORMAT_MOUNT:
             self._do_format_and_mount(*args)
@@ -81,8 +76,6 @@ class Task():
         else:
             print "No other tasks defined"  # TODO: Better error handling
 
-        # Disconnect the SSH session
-        ret = self._do_terminate()
 
     def _onlyascii(self, char):
 
@@ -102,6 +95,12 @@ class Task():
         return stdin, stdout
 
     def _do_format_and_mount(self, filesystem, mountpoint, cinder_id, os_user, os_password, os_tenant_name, os_auth_url):
+
+	 if not self._ssh:
+            # Perform login to the virtual machine
+            ret = self._do_login()
+            if ret == -1:
+                logging.critical("Some SSH error")
 
         # Prepare credentials required to connect to Cinder API service
         if not os_user:
@@ -123,18 +122,25 @@ class Task():
         list_cinder = cc.volumes.get(cinder_id)._info["attachments"]
         dev_name = list_cinder[0]["device"]
 
-        dev_name = "/dev/vdb"
-        cmd = "sudo mkfs -t " + filesystem + " " + dev_name
-
-        stdin, stdout = self._exec_sudo_command(cmd)
-        print stdout.read()
+	#print dev_name
+	# TODO: Hardcoded value below!
+        dev_name = "/dev/vdc"
+        
+	if filesystem:
+		cmd = "sudo mkfs -t " + filesystem + " " + dev_name
+	        stdin, stdout = self._exec_sudo_command(cmd)
+	        print stdout.read()
 
         cmd = "sudo mkdir -p " + mountpoint
         stdin, stdout = self._exec_sudo_command(cmd)
+	stdout.read() # Flush
 
         cmd = "sudo mount " + dev_name + " " + mountpoint
         stdin, stdout = self._exec_sudo_command(cmd)
         print stdout.read()
+
+	# Disconnect the SSH session
+        ret = self._do_terminate()
 
         return
 
