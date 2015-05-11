@@ -40,7 +40,7 @@ class Task():
         # Can be later used to retrieve key from the database.
         # Modify the set_credentials arguments above, for setting
         # the right credentials needed to retrieve the key
-        Key = paramiko.RSAKey.from_private_key_file(self._keypath)
+        key = paramiko.RSAKey.from_private_key_file(self._keypath)
 
         return key
 
