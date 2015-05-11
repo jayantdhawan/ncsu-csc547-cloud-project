@@ -198,38 +198,3 @@ class Mapper:
 		else:
 	#		print("Inside 1L");
 			return bool(True);
-
-"""
-mapper = Mapper()
-print mapper.insert_user_storage_grp('d183a84d774a4e21b854fffb86859a03',3)
-print mapper.insert_storage_grp_cinder(3,'4c6a5100-7ad3-49c5-9b2d-8ec586de29c0')
-
-#print mapper.insert_user_storage_grp('b',1)
-#print mapper.insert_user_storage_grp('a',2)
-#print mapper.insert_storage_grp_cinder(1,'c')
-#print mapper.insert_storage_grp_cinder(1,'d')
-#print mapper.insert_storage_grp_cinder(2,'e')
-#print mapper.insert_storage_grp_cinder(2,'f')
-
-arr = mapper.get_user_from_cinder('e')
-
-for element in arr:
-	print "User-",element
-
-cinder = mapper.get_cinder_from_user('b')
-
-for element in cinder:
-	print "Cinder - ",element
-
-
-if(mapper.check_exist_user_cinder('a','c')):
-	print("c-a Cinder-User mapping found");
-else:
-	print("c-a Cinder-User mapping not found");
-
-if(mapper.check_exist_user_cinder('b','f')):
-        print("b-f Cinder-User mapping found");
-else:
-        print("b-f Cinder-User mapping not found");
-
-"""

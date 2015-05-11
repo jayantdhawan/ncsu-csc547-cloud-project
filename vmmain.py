@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+# TODO: Better error handling
+
 # Built-in modules
 import argparse
 import logging
@@ -46,7 +48,7 @@ def main():
 
     # Send credential info to task module
     if argv.task == 'mount':
-        task.set_credentials(argv.host, argv.user, argv.key, argv.windows) # Check for error
+        task.set_credentials(argv.host, argv.user, argv.key, argv.windows)
 
     # Now call the specific task
     if argv.task == 'attach':

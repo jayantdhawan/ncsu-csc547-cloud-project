@@ -35,6 +35,15 @@ class Task():
         self._keypath = key
         self._isWindows = isWindows
 
+    def _get_private_key(self):
+
+        # Can be later used to retrieve key from the database.
+        # Modify the set_credentials arguments above, for setting
+        # the right credentials needed to retrieve the key
+        Key = paramiko.RSAKey.from_private_key_file(self._keypath)
+
+        return key
+
     def _do_login(self):
 
         if not self._isWindows:
@@ -42,21 +51,16 @@ class Task():
             if self._ssh:
                 return -1
 
-            # TODO: Handle errors at each step
             # Create a new SSHClient object from Paramiko
             self._ssh = paramiko.SSHClient()
 
             # Prompt for missing host key in known_hosts set to auto
-            # TODO: Give an option to not do this?
             self._ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
             # Read key from private key file
-            # TODO: Ability to add different sources of keys
-            key = paramiko.RSAKey.from_private_key_file(self._keypath)
+            key = self._get_private_key()
 
             # Attempt to connect to SSH
-            # TODO: Key sources!
-            # TODO: Check for error
             self._ssh.connect(hostname = str(self._host), username = str(self._user), pkey = key)
 
             return True
@@ -66,7 +70,7 @@ class Task():
             logging.error("Windows-based virtual machines not supported")
 
     def do_task(self, task_type, *args):
-	
+
         if task_type == TASKTYPE.TASK_FORMAT_MOUNT:
             self._do_format_and_mount(*args)
 
@@ -121,10 +125,6 @@ class Task():
         # Retrieve info about this volume
         list_cinder = cc.volumes.get(cinder_id)._info["attachments"]
         dev_name = list_cinder[0]["device"]
-
-        #print dev_name
-        # TODO: Hardcoded value below!
-        dev_name = "/dev/vdc"
         
         if filesystem:
             cmd = "sudo mkfs -t " + filesystem + " " + dev_name
@@ -170,6 +170,11 @@ class Task():
 
         return
 
+    # _locate_block_format_and_mount
+    # Obsolete function used to format and mount while extracting the
+    # name of the block device from the /dev folder
+    # This was done as a workaround to the issue of incorrect device path
+    # reported by the Cinder service
     def _locate_block_format_and_mount(self, filesystem, mountpoint, size):
 
         stdin, stdout, stderr = self.ssh.exec_command("sudo lsblk -b --output NAME,SIZE,TYPE,FSTYPE,MOUNTPOINT")
